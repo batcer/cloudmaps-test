@@ -60,6 +60,7 @@ module.exports = {
                   res.view('user/error',{message: 'При активации пользователя произошла ошибка: ' + error.message});
                 }
                 else{
+                  req.session.user = undefined;
                   res.redirect('/login');
                 }
               });

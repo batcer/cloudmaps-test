@@ -49,6 +49,7 @@ module.exports.policies = {
 		// feed : ['isNiceToAnimals', 'hasRabbitFood']
 	// }
   UserController: {
-    profile: 'sessionAuth'
-  } 
+    profile: ['sessionAuth', 'activatedOnly'],
+    send_activation: 'sessionAuth'
+  }
 };

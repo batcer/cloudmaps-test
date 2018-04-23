@@ -6,6 +6,24 @@
  */
 var crypto = require('crypto');
 
+var sendActivationEmail = function(email, userId, password, callback){
+  var nodemailer = require('nodemailer');
+  var smtpTransport = require('nodemailer-smtp-transport');
+  var transporter = nodemailer.createTransport(smtpTransport({
+      host: 'localhost',
+      port: 25,
+      ignoreTLS: true
+    })
+  );
+  var mailOptions ={
+    from: 'test@cloudmaps.ru' ,
+    to: email,
+    subject: 'User Activation Email',
+    text: 'http://localhost:1337/user/register/?id='+userId+'&t='+password
+  };
+  transporter.sendMail(mailOptions, callback);
+};
+
 module.exports = {
 
   register: function(req, res){
@@ -18,21 +36,7 @@ module.exports = {
           res.view('user/error', {message: 'При регистрации пользователя произошла ошибка: ' + error.message});
         }
         else{
-          var nodemailer = require('nodemailer');
-          var smtpTransport = require('nodemailer-smtp-transport');
-          var transporter = nodemailer.createTransport(smtpTransport({
-              host: 'localhost',
-              port: 25,
-              ignoreTLS: true
-            })
-          );
-          var mailOptions ={
-            from: 'test@cloudmaps.ru' ,
-            to: model.email,
-            subject: 'User Activation Email',
-            text: 'http://localhost:1337/user/register/?id='+data.id+'&t='+model.password
-          };
-          transporter.sendMail(mailOptions, function(error, info){
+          sendActivationEmail(model.email, data.id, model.password, function(error, info){
             if(error){
               res.view('user/error', {message: 'При регистрации пользователя произошла ошибка: ' + error.message});
             }
@@ -68,6 +72,21 @@ module.exports = {
       }
       else{
         res.view();
+      }
+    }
+  },
+
+  send_activation: function(req, res){
+    if(req.method === 'GET'){
+      if(req.session.user.active){
+        res.view('user/error',{message: 'Пользователь уже активирован'});
+      }else{
+        sendActivationEmail(req.session.user.email, req.session.user.id, req.session.user.password, function(error, info){
+          if(error){
+            res.view('user/error', {message: 'Ошибка при отправке письма: ' + error.message});
+          }
+          else res.view('user/activation_sent');
+        });
       }
     }
   },

@@ -21,4 +21,6 @@ module.exports = {
   //   connection: 'someMongodbServer'
   // }
 
+  rootPath: "/home/misha/Projects/test/municip/cloudmaps_test"
+
 };
